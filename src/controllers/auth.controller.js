@@ -78,6 +78,56 @@ const registerUser = asyncHandler(async (req,res) => {
 });
 
 
+const LoginUser = asyncHandler(async (req,res) => {
+    const {email,username,password} = req.body;
+
+    if(!email || !password){
+        throw new ApiError(400,"email and password are required")
+    }
+
+    const user = await User.findOne({email});
+
+    if(!user){
+        throw new ApiError(400,"user not found");
+    }
+
+    const isPassValid = await user.isPasswordCorrect(password);
+
+    if(!isPassValid){
+        throw new ApiError(400, "Invalid credentials");
+    }
+
+    const {accessToken,refreshToken} = await generateAccessAndRefreshTokens(user._id);
+
+    const loggedInUser = await User.findOne(user._id).select(
+    "-password -refreshToken -emailVerificationToken -emailVerificationExpiry",
+    );
+
+    const options = {
+    httpOnly: true,
+    secure: true,
+    };
+
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(
+        new ApiResponse(
+            200,
+            {
+            user: loggedInUser,
+            accessToken,
+            refreshToken,
+            },
+            "User logged in successfully",
+        ),
+    );
+});
 
 
-export { registerUser };
+
+
+
+
+export { registerUser , LoginUser};
