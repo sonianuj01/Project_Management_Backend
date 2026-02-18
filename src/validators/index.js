@@ -1,4 +1,6 @@
 import { body } from "express-validator";
+import { AvailableUserRole } from "../utils/constants.js";
+
 
 const userRegisterValidator = () => {
     return [
@@ -84,11 +86,23 @@ const addMembertoProjectValidator = () => {
 };
 
 
+const createTaskValidator = () => {
+    return [
+        body("title").notEmpty().withMessage("Name is required"),
+        body("description").optional(),
+        body("assignedTo").optional(),
+        body("status").notEmpty().withMessage("Current-Status-(todo,progress or done), required!!"),
+    ];
+};
+
+
+
 export {
     userRegisterValidator, logInValidator,
     userChangeCurrentPasswordValidator,
     userForgotPasswordValidator,
     userResetForgotPasswordValidator,
     addMembertoProjectValidator,
-    createProjectValidator
+    createProjectValidator,
+    createTaskValidator
 };

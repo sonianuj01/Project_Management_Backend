@@ -34,23 +34,23 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
 
 
 export const validateProjectPermission = (roles = []) => {
-    asyncHandler(async (req, res, next) => {
+    return asyncHandler(async (req, res, next) => {
         const { projectId } = req.params;
 
         if (!projectId) {
             throw new ApiError(400, "project id is missing");
         }
 
-        const projectMem = await ProjectMember.findOne({
+        const project = await ProjectMember.findOne({
             project: new mongoose.Types.ObjectId(projectId),
             user: new mongoose.Types.ObjectId(req.user._id),
         });
 
-        if (!projectMem) {
+        if (!project) {
             throw new ApiError(400, "project not found");
         }
 
-        const givenRole = projectMem?.role;
+        const givenRole = project?.role;
 
         req.user.role = givenRole;
 
@@ -64,4 +64,3 @@ export const validateProjectPermission = (roles = []) => {
         next();
     });
 };
-
