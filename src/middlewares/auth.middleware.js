@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/api-error.js";
 import { ProjectMember } from "../models/projectmember.models.js";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 // To check your access-token valid or expired
 // are you login or not
@@ -11,7 +12,7 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
         || req.header("Authorization")?.replace("Bearer ", "");
 
     if (!Token) {
-        return new ApiError(401, "Unauthorized request!");
+        throw new ApiError(401, "Unauthorized request!");
     }
 
 
@@ -41,16 +42,16 @@ export const validateProjectPermission = (roles = []) => {
             throw new ApiError(400, "project id is missing");
         }
 
-        const project = await ProjectMember.findOne({
+        const projectMem = await ProjectMember.findOne({
             project: new mongoose.Types.ObjectId(projectId),
             user: new mongoose.Types.ObjectId(req.user._id),
         });
 
-        if (!project) {
-            throw new ApiError(400, "project not found");
+        if (!projectMem) {
+            throw new ApiError(400, "No such project-member entity exist!");
         }
 
-        const givenRole = project?.role;
+        const givenRole = projectMem?.role;
 
         req.user.role = givenRole;
 
